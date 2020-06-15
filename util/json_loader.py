@@ -1,10 +1,12 @@
 import json
+import os
 
 
 class JsonLoader:
 	@staticmethod
-	def loadIcons():
-		with open("macros.json") as f:
+	def loadFile(file):
+		assert os.path.exists(file)
+		with open(file) as f:
 			macros = json.load(f)
 		
 		return macros
