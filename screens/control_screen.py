@@ -2,6 +2,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from util.json_loader import JsonLoader
 
 
 class ControlScreen(BoxLayout):
@@ -10,6 +11,8 @@ class ControlScreen(BoxLayout):
 		
 		self.orientation = 'vertical'
 		self.spacing = 5
+		
+		self.macros = JsonLoader.loadIcons()
 		
 		self.topBar = BoxLayout(orientation='horizontal', size_hint=(1, 0.1), spacing=3)
 		self.iconWrapper = BoxLayout(orientation='horizontal', size_hint=(1, 0.9), spacing=3)
@@ -28,18 +31,19 @@ class ControlScreen(BoxLayout):
 		self.btPrev = Button(text='<', size_hint=(0.1, 1))
 		self.btNext = Button(text='>', size_hint=(0.1, 1))
 		
-		buttons = []
-		i = 0
-		while i < 8:
-			buttons.append(Button(text='test' + str(i)))
-			i += 1
-		
-		for button in buttons:
-			self.iconGrid.add_widget(button)
-		
 		self.iconWrapper.add_widget(self.btPrev)
 		self.iconWrapper.add_widget(self.iconGrid)
 		self.iconWrapper.add_widget(self.btNext)
 		
 		self.add_widget(self.iconWrapper)
-
+		
+		self.initMakros()
+		
+	def initMakros(self):
+		for macro in self.macros:
+			current = Button(text=macro['name'])
+			self.iconGrid.add_widget(current)
+			
+	def updateMakros(self):
+		self.macros = JsonLoader.loadIcons()
+		self.initMakros()
