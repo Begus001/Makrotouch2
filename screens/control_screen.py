@@ -52,7 +52,7 @@ class ControlScreen(BoxLayout):
 		
 		self.initMakros()
 	
-	def nextPage(self, ign):
+	def nextPage(self, sender):
 		if (self.macroPage + 1) >= self.numMacroPages:
 			self.macroPage = 0
 		else:
@@ -61,7 +61,7 @@ class ControlScreen(BoxLayout):
 		self.lbPage.text = str(self.macroPage + 1)
 		self.initMakros()
 	
-	def prevPage(self, ign):
+	def prevPage(self, sender):
 		if (self.macroPage - 1) < 0:
 			self.macroPage = self.numMacroPages - 1
 		else:
@@ -83,14 +83,14 @@ class ControlScreen(BoxLayout):
 				if currentName != '' and currentImage != '':
 					assert os.path.exists(self.imgLocation + currentImage)
 					currentBtn = Button(text=currentName, background_normal='img/' + currentImage)
-					currentBtn.bind(on_press=partial(self.resetBorder, currentBtn), on_release=partial(self.setBorder, currentBtn))
-					self.setBorder(None, currentBtn)
+					currentBtn.bind(on_press=partial(self.execMacro, i), on_release=self.resetBorder)
+					currentBtn.border = (0, 0, 0, 0)
 				elif currentImage == '':
 					currentBtn = Button(text=currentName)
 				elif currentName == '':
 					currentBtn = Button(background_normal='img/' + currentImage)
-					currentBtn.bind(on_press=partial(self.resetBorder, currentBtn), on_release=partial(self.setBorder, currentBtn))
-					self.setBorder(None, currentBtn)
+					currentBtn.bind(on_press=partial(self.execMacro, i), on_release=self.resetBorder)
+					currentBtn.border = (0, 0, 0, 0)
 			
 			self.iconGrid.add_widget(currentBtn)
 			i += 1
@@ -99,8 +99,9 @@ class ControlScreen(BoxLayout):
 		self.macros = JsonLoader.loadFile(self.macrocfg_location)
 		self.initMakros()
 	
-	def resetBorder(self, ign, sender):
-		sender.border = (16, 16, 16, 16)
-	
-	def setBorder(self, ign, sender):
+	def resetBorder(self, sender):
 		sender.border = (0, 0, 0, 0)
+	
+	def execMacro(self, macroId, sender):
+		sender.border = (16, 16, 16, 16)
+		print('exec ' + str(macroId))
