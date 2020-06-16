@@ -15,7 +15,7 @@ class ControlConnection:
 		print('Created UDP socket')
 		
 		self.targetIp = None
-		self.ip = socket.gethostbyname(socket.gethostname()) if Config.config['ipOverride'] == "" else Config.config['ipOverride']
+		self.ip = socket.gethostbyname(socket.getfqdn()) if Config.config['ipOverride'] == "" else Config.config['ipOverride']
 		self.port = Config.config['macroServerPort']
 		self.recvBufSize = Config.config['macroRecvBufSize']
 		self.connected = False
@@ -48,10 +48,9 @@ class ControlConnection:
 			self.s.sendto(bytes('makrotouch ' + self.ip, 'ascii'), (self.targetIp, self.port))
 			print('Reply sent, waiting 500ms')
 			time.sleep(0.5)
-			self.s.shutdown()
 			self.connected = True
 			
 		while True:
 			time.sleep(0.5)
 			if self.connected:
-				self.s.sendto(bytes('WORKING', 'ascii'), (self.targetIp, self.targetIp))
+				self.s.sendto(bytes('WORKING', 'ascii'), (self.targetIp, self.port))
