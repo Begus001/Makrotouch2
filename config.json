@@ -3,5 +3,8 @@
   "windowHeight": 600,
   "borderless": true,
   "macroCols": 4,
-  "macroRows": 2
+  "macroRows": 2,
+  "ipOverride": "",
+  "macroServerPort": 42069,
+  "macroRecvBufSize": 64
 }
