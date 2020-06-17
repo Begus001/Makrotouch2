@@ -58,17 +58,17 @@ class ControlScreen(BoxLayout):
 		print('ControlScreen built')
 		
 		self.initMakros()
-		
+	
 	def updatePageLabel(self):
 		print('Updating page label')
 		self.lbPage.text = 'Page: ' + str(self.macroPage + 1) + '/' + str(self.numMacroPages)
-		
+	
 	def updateConnectedLabel(self):
 		print('Updating connected label')
 		self.lbConnected.text = 'Connected to control: ' + ('Yes' if self.macroConnected else 'No')
 	
 	def nextPage(self, sender):
-		print('Trying to switch to next page ' + str(self.macroPage + 1))
+		print('\nTrying to switch to next page ' + str(self.macroPage + 1))
 		
 		if (self.macroPage + 1) >= self.numMacroPages:
 			print('Wrapping around')
@@ -82,7 +82,7 @@ class ControlScreen(BoxLayout):
 		print('Switched to page ' + str(self.macroPage))
 	
 	def prevPage(self, sender):
-		print('Trying to switch to previous page ' + str(self.macroPage - 1))
+		print('\nTrying to switch to previous page ' + str(self.macroPage - 1))
 		
 		if (self.macroPage - 1) < 0:
 			print('Wrapping around')
@@ -104,12 +104,13 @@ class ControlScreen(BoxLayout):
 			if i >= self.numMacros:
 				currentBtn = Button()
 			else:
+				# TODO: Optimize macro button creation
 				current = self.macros[i]
 				currentName = current['name']
 				currentImage = current['image']
 				if currentName != '' and currentImage != '':
 					assert os.path.exists(self.imgLocation + currentImage)
-					currentBtn = Button(text=currentName, background_normal='img/' + currentImage)
+					currentBtn = Button(text=currentName, background_normal='img/' + currentImage, outline_color=(0, 0, 0), outline_width=2)
 					currentBtn.bind(on_press=partial(self.execMacro, i), on_release=self.resetBorder)
 					currentBtn.border = (0, 0, 0, 0)
 				elif currentImage == '':
@@ -131,5 +132,8 @@ class ControlScreen(BoxLayout):
 		sender.border = (0, 0, 0, 0)
 	
 	def execMacro(self, macroId, sender):
+		
+		# TODO: Implement macro execution command sending after control_conntion is finished
+		
 		sender.border = (16, 16, 16, 16)
 		print('exec ' + str(macroId))

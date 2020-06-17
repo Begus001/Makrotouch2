@@ -50,6 +50,8 @@ class ControlConnection:
 			time.sleep(0.5)
 			self.connected = True
 			
+		# TODO: Add keepAlive and send after connected
+			
 		while True:
 			time.sleep(0.5)
 			if self.connected:
