@@ -10,9 +10,9 @@ import os
 
 
 class ControlScreen(BoxLayout):
-	imgLocation = 'img/'
-	macrocfgLocation = 'macros.json'
-	macros = JsonLoader.loadFile(macrocfgLocation)
+	img_location = 'img/'
+	macro_cfg_Location = 'macros.json'
+	macros = JsonLoader.loadFile(macro_cfg_Location)
 	
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -20,88 +20,86 @@ class ControlScreen(BoxLayout):
 		self.orientation = 'vertical'
 		self.spacing = 5
 		
-		self.macroPage = 0
-		self.numMacros = len(self.macros)
-		self.macroCols = Config.config['macroCols']
-		self.macroRows = Config.config['macroRows']
-		self.macroPageSize = self.macroCols * self.macroRows
-		self.numMacroPages = math.ceil(self.numMacros / self.macroPageSize)
-		self.macroConnected = False
+		self.macro_page = 0
+		self.num_macros = len(self.macros)
+		self.macro_cols = Config.config['macroCols']
+		self.macro_rows = Config.config['macroRows']
+		self.macro_page_size = self.macro_cols * self.macro_rows
+		self.num_macro_pages = math.ceil(self.num_macros / self.macro_page_size)
+		self.macro_connected = False
 		
-		self.topBar = BoxLayout(orientation='horizontal', size_hint=(1, 0.1), spacing=3)
-		self.iconWrapper = BoxLayout(orientation='horizontal', size_hint=(1, 0.9), spacing=3)
-		self.iconGrid = GridLayout(cols=self.macroCols, size_hint=(0.8, 1))
+		self.top_bar = BoxLayout(orientation='horizontal', size_hint=(1, 0.1), spacing=3)
+		self.icon_wrapper = BoxLayout(orientation='horizontal', size_hint=(1, 0.9), spacing=3)
+		self.icon_grid = GridLayout(cols=self.macro_cols, size_hint=(0.8, 1))
 		
-		self.btSwitchMode = Button(text='Mode', size_hint=(0.1, 1))
-		self.lbPage = Label(size_hint=(0.4, 1))
-		self.updatePageLabel()
-		self.lbConnected = Label(size_hint=(0.4, 1))
-		self.updateConnectedLabel()
-		self.btSettings = Button(text='Settings', size_hint=(0.1, 1))
+		self.bt_switch_mode = Button(text='Mode', size_hint=(0.1, 1))
+		self.lb_page = Label(size_hint=(0.4, 1))
+		self.update_page_label()
+		self.lb_connected = Label(size_hint=(0.4, 1))
+		self.update_connected_label()
+		self.bt_settings = Button(text='Settings', size_hint=(0.1, 1))
 		
-		self.topBar.add_widget(self.btSwitchMode)
-		self.topBar.add_widget(self.lbPage)
-		self.topBar.add_widget(self.lbConnected)
-		self.topBar.add_widget(self.btSettings)
+		self.top_bar.add_widget(self.bt_switch_mode)
+		self.top_bar.add_widget(self.lb_page)
+		self.top_bar.add_widget(self.lb_connected)
+		self.top_bar.add_widget(self.bt_settings)
 		
-		self.add_widget(self.topBar)
+		self.add_widget(self.top_bar)
 		
-		self.btPrev = Button(text='<', size_hint=(0.1, 1), on_press=self.prevPage)
-		self.btNext = Button(text='>', size_hint=(0.1, 1), on_press=self.nextPage)
+		self.bt_prev = Button(text='<', size_hint=(0.1, 1), on_press=self.prev_page)
+		self.bt_next = Button(text='>', size_hint=(0.1, 1), on_press=self.next_page)
 		
-		self.iconWrapper.add_widget(self.btPrev)
-		self.iconWrapper.add_widget(self.iconGrid)
-		self.iconWrapper.add_widget(self.btNext)
+		self.icon_wrapper.add_widget(self.bt_prev)
+		self.icon_wrapper.add_widget(self.icon_grid)
+		self.icon_wrapper.add_widget(self.bt_next)
 		
-		self.add_widget(self.iconWrapper)
+		self.add_widget(self.icon_wrapper)
 		
-		print('ControlScreen built')
-		
-		self.initMakros()
+		self.init_makros()
 	
-	def updatePageLabel(self):
+	def update_page_label(self):
 		print('Updating page label')
-		self.lbPage.text = 'Page: ' + str(self.macroPage + 1) + '/' + str(self.numMacroPages)
+		self.lb_page.text = 'Page: ' + str(self.macro_page + 1) + '/' + str(self.num_macro_pages)
 	
-	def updateConnectedLabel(self):
+	def update_connected_label(self):
 		print('Updating connected label')
-		self.lbConnected.text = 'Connected to control: ' + ('Yes' if self.macroConnected else 'No')
+		self.lb_connected.text = 'Connected to control: ' + ('Yes' if self.macro_connected else 'No')
 	
-	def nextPage(self, sender):
-		print('\nTrying to switch to next page ' + str(self.macroPage + 1))
+	def next_page(self, sender):
+		print('\nTrying to switch to next page ' + str(self.macro_page + 1))
 		
-		if (self.macroPage + 1) >= self.numMacroPages:
+		if (self.macro_page + 1) >= self.num_macro_pages:
 			print('Wrapping around')
-			self.macroPage = 0
+			self.macro_page = 0
 		else:
-			self.macroPage += 1
+			self.macro_page += 1
 		
-		self.updatePageLabel()
-		self.initMakros()
+		self.update_page_label()
+		self.init_makros()
 		
-		print('Switched to page ' + str(self.macroPage))
+		print('Switched to page ' + str(self.macro_page))
 	
-	def prevPage(self, sender):
-		print('\nTrying to switch to previous page ' + str(self.macroPage - 1))
+	def prev_page(self, sender):
+		print('\nTrying to switch to previous page ' + str(self.macro_page - 1))
 		
-		if (self.macroPage - 1) < 0:
+		if (self.macro_page - 1) < 0:
 			print('Wrapping around')
-			self.macroPage = self.numMacroPages - 1
+			self.macro_page = self.num_macro_pages - 1
 		else:
-			self.macroPage -= 1
+			self.macro_page -= 1
 		
-		self.updatePageLabel()
-		self.initMakros()
+		self.update_page_label()
+		self.init_makros()
 		
-		print('Switched to page ' + str(self.macroPage))
+		print('Switched to page ' + str(self.macro_page))
 	
-	def initMakros(self):
+	def init_makros(self):
 		print('Initializing macros')
 		
-		self.iconGrid.clear_widgets()
-		i = self.macroPage * self.macroPageSize
-		while i < (self.macroPage * self.macroPageSize) + self.macroPageSize:
-			if i >= self.numMacros:
+		self.icon_grid.clear_widgets()
+		i = self.macro_page * self.macro_page_size
+		while i < (self.macro_page * self.macro_page_size) + self.macro_page_size:
+			if i >= self.num_macros:
 				currentBtn = Button()
 			else:
 				# TODO: Optimize macro button creation
@@ -109,29 +107,29 @@ class ControlScreen(BoxLayout):
 				currentName = current['name']
 				currentImage = current['image']
 				if currentName != '' and currentImage != '':
-					assert os.path.exists(self.imgLocation + currentImage)
+					assert os.path.exists(self.img_location + currentImage)
 					currentBtn = Button(text=currentName, background_normal='img/' + currentImage, outline_color=(0, 0, 0), outline_width=2)
-					currentBtn.bind(on_press=partial(self.execMacro, i), on_release=self.resetBorder)
+					currentBtn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
 					currentBtn.border = (0, 0, 0, 0)
 				elif currentImage == '':
 					currentBtn = Button(text=currentName)
 				elif currentName == '':
 					currentBtn = Button(background_normal='img/' + currentImage)
-					currentBtn.bind(on_press=partial(self.execMacro, i), on_release=self.resetBorder)
+					currentBtn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
 					currentBtn.border = (0, 0, 0, 0)
 			
-			self.iconGrid.add_widget(currentBtn)
+			self.icon_grid.add_widget(currentBtn)
 			i += 1
 	
-	def updateMakros(self):
+	def update_makros(self):
 		print('Reloading macros')
 		self.macros = JsonLoader.loadFile(self.macrocfg_location)
-		self.initMakros()
+		self.init_makros()
 	
-	def resetBorder(self, sender):
+	def reset_border(self, sender):
 		sender.border = (0, 0, 0, 0)
 	
-	def execMacro(self, macroId, sender):
+	def exec_macro(self, macroId, sender):
 		
 		# TODO: Implement macro execution command sending after control_conntion is finished
 		

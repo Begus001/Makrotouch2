@@ -3,10 +3,11 @@ import os
 
 
 class JsonLoader:
+	# Load json file
 	@staticmethod
 	def loadFile(file):
 		assert os.path.exists(file)
 		with open(file) as f:
-			macros = json.load(f)
+			json_file = json.load(f)
 		
-		return macros
+		return json_file

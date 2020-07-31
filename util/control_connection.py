@@ -5,27 +5,23 @@ import time
 
 
 class ControlConnection:
-	def __init__(self, cbConnectionStateChanged):
-		self.cbConnectionStateChanged = cbConnectionStateChanged
+	def __init__(self, cb_connection_state_changed):
+		self.cb_connection_state_changed = cb_connection_state_changed
 		
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 		self.s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
 		
-		print('Created UDP socket')
-		
-		self.targetIp = None
+		self.target_ip = None
 		self.ip = socket.gethostbyname(socket.getfqdn()) if Config.config['ipOverride'] == "" else Config.config['ipOverride']
 		self.port = Config.config['macroServerPort']
-		self.recvBufSize = Config.config['macroRecvBufSize']
+		self.recv_buf_size = Config.config['macroRecvBufSize']
 		self.connected = False
-		assert self.ip is not None and self.port is not None and self.recvBufSize is not None
+		assert self.ip is not None and self.port is not None and self.recv_buf_size is not None
 		self.listener = threading.Thread(target=self.listen)
 		self.listener.start()
 	
 	def listen(self):
-		print('Listening thread started')
-		
 		while True:
 			try:
 				self.s.bind((self.ip, self.port))
@@ -36,23 +32,24 @@ class ControlConnection:
 				time.sleep(1)
 		
 		while not self.connected:
-			msg, addr = self.s.recvfrom(self.recvBufSize)
+			msg, addr = self.s.recvfrom(self.recv_buf_size)
 			msg = msg.decode()
 			
 			if msg != 'makrotouch':
 				continue
 			
-			self.targetIp = addr[0]
+			self.target_ip = addr[0]
 			print('Got connect message from ' + addr[0] + ':' + str(addr[1]))
 			print('Sending replay')
-			self.s.sendto(bytes('makrotouch ' + self.ip, 'ascii'), (self.targetIp, self.port))
+			self.s.sendto(bytes('makrotouch ' + self.ip, 'ascii'), (self.target_ip, self.port))
 			print('Reply sent, waiting 500ms')
 			time.sleep(0.5)
 			self.connected = True
+			self.cb_connection_state_changed()
 			
 		# TODO: Add keepAlive and send after connected
 			
 		while True:
 			time.sleep(0.5)
 			if self.connected:
-				self.s.sendto(bytes('WORKING', 'ascii'), (self.targetIp, self.port))
+				self.s.sendto(bytes('WORKING', 'ascii'), (self.target_ip, self.port))
