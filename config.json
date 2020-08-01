@@ -1,10 +1,9 @@
 {
-  "windowWidth": 1024,
-  "windowHeight": 600,
+  "windowWidth": 1025,
+  "windowHeight": 601,
   "borderless": true,
   "macroCols": 4,
   "macroRows": 2,
-  "ipOverride": "",
   "macroServerPort": 42069,
   "macroRecvBufSize": 64
 }
