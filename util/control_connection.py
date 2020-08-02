@@ -1,14 +1,14 @@
 from util.config import Config
+from screens.control_screen import ControlScreen
 import socket
 import threading
 import time
 
 
 class ControlConnection:
-	def __init__(self, cb_connection_state_changed):
+	def __init__(self, control_screen: ControlScreen):
 		
-		# Save callback method to remind sender of a changed connection state
-		self.cb_connection_state_changed = cb_connection_state_changed
+		self.control_screen = control_screen
 		
 		# region Datagram socket setup
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -18,12 +18,11 @@ class ControlConnection:
 		self.ip: str = socket.gethostbyname(socket.gethostname()) if Config.config['ipOverride'] == "" else Config.config['ipOverride']
 		self.port: int = Config.config['macroServerPort']
 		self.recv_buf_size: int = Config.config['macroRecvBufSize']
-		self.target_ip: str = None
+		self.target_ip: str = ''
 		self.connected: bool = False
 		# endregion
 		
 		# region Create and start listener thread
-		assert self.ip is not None and self.port is not None and self.recv_buf_size is not None
 		self.connection_handler = threading.Thread(target=self.handle_connection)
 		self.connection_handler.start()
 		# endregion
@@ -55,72 +54,90 @@ class ControlConnection:
 			msg, addr = self.s.recvfrom(self.recv_buf_size)
 			msg = msg.decode()
 			
-			print(msg)
-			
 			if msg != 'makrotouch connect':
 				continue
 			
-			self.change_connection_status(True)
-		# endregion
-		
-		# region Initiate connection
-		self.target_ip = addr[0]
-		
-		print('Got connect message from {}:{}'.format(addr[0], str(addr[1])))
-		
-		self.reset_socket()
-		
-		try:
-			self.s.bind((self.ip, self.port))
-		except OSError:
-			print('Could not bind socket to port {}, reverting to listening'.format(str(self.port)))
+			# region Initiate connection
+			self.target_ip = addr[0]
 			
-			self.change_connection_status(False)
+			print('Got connect message from {}:{}'.format(addr[0], str(addr[1])))
+			
 			self.reset_socket()
 			
-			time.sleep(1)
-			return
-		
-		print('Sending reply')
-		self.s.sendto(b'makrotouch connect', (self.target_ip, self.port))
+			try:
+				self.s.bind((self.ip, self.port))
+			except OSError:
+				print('Could not bind socket to port {}, reverting to listening'.format(str(self.port)))
+				
+				self.change_connection_status(False)
+				self.reset_socket()
+				
+				time.sleep(1)
+				return
+			
+			print('Sending reply')
+			self.s.sendto(b'makrotouch connect', (self.target_ip, self.port))
+			# endregion
+			self.change_connection_status(True)
 		# endregion
 		
 		return
 	
-	# Waits for ping, sends pong, reverts to listening, if ping takes too long
+	# Receives messages and sends keep alive
 	def keep_alive(self):
 		while self.connected:
 			self.s.settimeout(Config.config['keepAliveTimeout'])
 			
 			try:
-				self.s.recvfrom(self.recv_buf_size)
+				msg, addr = self.s.recvfrom(self.recv_buf_size)
+				msg = msg.decode()
 			except socket.timeout:
 				print('Connection interrupted')
 				self.change_connection_status(False)
 				self.reset_socket()
 				return
 			
-			print('Keep alive received')
-			
-			self.s.sendto(b'makrotouch pong', (self.target_ip, self.port))
-			print('Keep alive sent')
-			
-			time.sleep(0.25)
+			if 'makrotouch ' in msg:
+				if msg.split(' ')[1] == 'ping':
+					self.s.sendto(b'makrotouch pong', (self.target_ip, self.port))
+				else:
+					self.command(msg.split(' ')[1])
+			else:
+				print('Received invalid message')
+		
+		print('Disconnected')
+	
+	# Executes the received command
+	def command(self, cmd):
+		if cmd == 'reload':
+			print('Received reload command')
+			self.control_screen.update_macros()
+		elif cmd == 'disconnect':
+			print('Received disconnect command')
+			self.change_connection_status(False)
+			self.reset_socket()
+		else:
+			print('Received invalid command')
 	
 	# Sends a message to the target if connected
 	def send(self, msg):
 		if not self.connected:
+			print('Couldn\'t send "{}" to control application, not connected'.format(msg))
 			return False
 		
+		print('Sending "{}" to control application'.format(msg))
 		self.s.sendto(bytes(msg, 'ascii'), (self.target_ip, self.port))
 		return True
 	
 	# Resets the socket to accept a new binding
 	def reset_socket(self):
+		print('Resetting socket')
 		self.s.close()
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	
 	# Changed connected and calls callback method
 	def change_connection_status(self, status):
 		self.connected = status
-		self.cb_connection_state_changed(self.connected)
+		print('Connection status changed to {}'.format(status))
+		self.control_screen.macro_connected = status
+		self.control_screen.update_connected_label()

@@ -3,7 +3,7 @@ import os
 
 
 class JsonLoader:
-	# Load json file
+	# Loads json file
 	@staticmethod
 	def load_file(file):
 		assert os.path.exists(file)

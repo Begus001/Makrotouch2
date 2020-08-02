@@ -1,6 +1,7 @@
 {
   "windowWidth": 1025,
-  "windowHeight": 601,
+  "windowHeight": 600,
+  "fullscreen": true,
   "borderless": true,
   "macroCols": 4,
   "macroRows": 2,

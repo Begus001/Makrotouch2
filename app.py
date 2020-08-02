@@ -7,22 +7,19 @@ from util.control_connection import ControlConnection
 
 # Fetch data from config file
 Window.size = (Config.config['windowWidth'], Config.config['windowHeight'])
+Window.fullscreen = Config.config['fullscreen']
 Window.borderless = Config.config['borderless']
 
 
 class Main(App):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
-		self.controlScreen = ControlScreen()
-		self.macroConnection = ControlConnection(self.cbConnectionStateChanged)  # Create new connection with callback function
+		self.control_screen = ControlScreen()
+		self.macro_connection = ControlConnection(self.control_screen)
+		self.control_screen.macro_connection = self.macro_connection
 	
 	def build(self):
-		return self.controlScreen
-	
-	# Set connection to control application to true and update label
-	def cbConnectionStateChanged(self, value):
-		self.controlScreen.macro_connected = value
-		self.controlScreen.update_connected_label()
+		return self.control_screen
 
 
 if __name__ == '__main__':

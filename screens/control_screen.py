@@ -11,9 +11,6 @@ import os
 
 # Main screen
 class ControlScreen(BoxLayout):
-	img_location = 'img/'
-	macro_cfg_location = 'macros.json'
-	macros = JsonLoader.load_file(macro_cfg_location)  # Load configuration
 	
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -24,12 +21,17 @@ class ControlScreen(BoxLayout):
 		# endregion
 		
 		# region Macro page config
-		self.macro_page = 0
-		self.num_macros = len(self.macros)
-		self.macro_cols = Config.config['macroCols']
-		self.macro_rows = Config.config['macroRows']
-		self.macro_page_size = self.macro_cols * self.macro_rows
-		self.num_macro_pages = math.ceil(self.num_macros / self.macro_page_size)
+		self.macro_cfg_location: str = 'macros.json'
+		self.macros = JsonLoader.load_file(self.macro_cfg_location)  # Load configuration
+		self.img_location = 'img/'
+		self.macro_page: int = 0
+		self.num_macros: int = len(self.macros)
+		self.macro_cols: int = Config.config['macroCols']
+		self.macro_rows: int = Config.config['macroRows']
+		self.macro_page_size: int = self.macro_cols * self.macro_rows
+		self.num_macro_pages: int = math.ceil(self.num_macros / self.macro_page_size)
+		self.macro_connected: bool = False
+		self.macro_connection = None
 		# endregion
 		
 		# region Wrapper Layout config
@@ -63,8 +65,7 @@ class ControlScreen(BoxLayout):
 		self.add_widget(self.icon_wrapper)
 		# endregion
 		
-		# region Set connected and update labels
-		self.macro_connected = False
+		# region Update labels
 		self.update_page_label()
 		self.update_connected_label()
 		# endregion
@@ -119,35 +120,41 @@ class ControlScreen(BoxLayout):
 		i = self.macro_page * self.macro_page_size
 		
 		while i < (self.macro_page * self.macro_page_size) + self.macro_page_size:
+			current_btn = Button()
 			
 			if i < self.num_macros:
 				
-				currentBtn = Button()
 				current = self.macros[i]
-				currentName = current['name']
-				currentImage = current['image']
-				
+				current_name = current['name']
+				current_image = current['image']
+
 				# Checks if the current macro has an image, a name, or both
-				if currentName != '' and currentImage != '':
-					assert os.path.exists(self.img_location + currentImage)
-					currentBtn.text = currentName
-					currentBtn.background_normal = 'img/' + currentImage
-					currentBtn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
-					currentBtn.border = (0, 0, 0, 0)
-				elif currentImage == '':
-					currentBtn.text = currentName
-				elif currentName == '':
-					currentBtn.background_normal = 'img/' + currentImage
-					currentBtn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
-					currentBtn.border = (0, 0, 0, 0)
-			
-			self.icon_grid.add_widget(currentBtn)
+				if current_name != '' and current_image != '':
+					current_btn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
+					current_btn.text = current_name
+					
+					if os.path.exists('img/' + current_image):
+						current_btn.background_normal = 'img/' + current_image
+						current_btn.border = (0, 0, 0, 0)
+				
+				elif current_image == '':
+					current_btn.text = current_name
+					current_btn.bind(on_press=partial(self.exec_macro, i))
+				elif current_name == '':
+					current_btn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
+					if os.path.exists('img/' + current_image):
+						current_btn.background_normal = 'img/' + current_image
+						current_btn.border = (0, 0, 0, 0)
+					else:
+						current_btn.text = 'IMG_ERR'
+				
+			self.icon_grid.add_widget(current_btn)
 			i += 1
 	
 	# Reloads macros.json and calls init_macros
 	def update_macros(self):
 		print('Reloading macros')
-		self.macros = JsonLoader.load_file(self.macrocfg_location)
+		self.macros = JsonLoader.load_file(self.macro_cfg_location)
 		self.init_macros()
 	
 	# Resets border (weird button click glitch with images)
@@ -156,8 +163,11 @@ class ControlScreen(BoxLayout):
 	
 	# Executes the action of the pressed macro button
 	def exec_macro(self, macroId, sender):
-		
-		# TODO: Implement macro execution command sending after control_conntion is finished
-		
 		sender.border = (16, 16, 16, 16)
-		print('exec ' + str(macroId))
+		
+		msg = 'makrotouch exec{}'.format(str(macroId))
+		
+		if self.macro_connected:
+			self.macro_connection.send(msg)
+		else:
+			print('Couldn\'t send "{}" to control application, not connected'.format(msg))
