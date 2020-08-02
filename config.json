@@ -5,5 +5,7 @@
   "macroCols": 4,
   "macroRows": 2,
   "macroServerPort": 42069,
-  "macroRecvBufSize": 64
+  "macroRecvBufSize": 64,
+  "ipOverride": "",
+  "keepAliveTimeout": 5
 }

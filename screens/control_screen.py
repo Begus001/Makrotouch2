@@ -8,6 +8,7 @@ from functools import partial
 import math
 import os
 
+
 # Main screen
 class ControlScreen(BoxLayout):
 	img_location = 'img/'
@@ -110,38 +111,40 @@ class ControlScreen(BoxLayout):
 		
 		print('Switched to page ' + str(self.macro_page))
 	
-	# region Init macros
 	# Clears macro icons and creates new icons form json file
 	def init_macros(self):
 		print('Initializing macros')
 		
 		self.icon_grid.clear_widgets()
 		i = self.macro_page * self.macro_page_size
+		
 		while i < (self.macro_page * self.macro_page_size) + self.macro_page_size:
-			if i >= self.num_macros:
+			
+			if i < self.num_macros:
+				
 				currentBtn = Button()
-			else:
-				# TODO: Optimize macro button creation
 				current = self.macros[i]
 				currentName = current['name']
 				currentImage = current['image']
+				
+				# Checks if the current macro has an image, a name, or both
 				if currentName != '' and currentImage != '':
 					assert os.path.exists(self.img_location + currentImage)
-					currentBtn = Button(text=currentName, background_normal='img/' + currentImage, outline_color=(0, 0, 0), outline_width=2)
+					currentBtn.text = currentName
+					currentBtn.background_normal = 'img/' + currentImage
 					currentBtn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
 					currentBtn.border = (0, 0, 0, 0)
 				elif currentImage == '':
-					currentBtn = Button(text=currentName)
+					currentBtn.text = currentName
 				elif currentName == '':
-					currentBtn = Button(background_normal='img/' + currentImage)
+					currentBtn.background_normal = 'img/' + currentImage
 					currentBtn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
 					currentBtn.border = (0, 0, 0, 0)
 			
 			self.icon_grid.add_widget(currentBtn)
 			i += 1
-	# endregion
 	
-	# Reloads macros.json
+	# Reloads macros.json and calls init_macros
 	def update_macros(self):
 		print('Reloading macros')
 		self.macros = JsonLoader.load_file(self.macrocfg_location)

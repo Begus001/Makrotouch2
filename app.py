@@ -20,8 +20,8 @@ class Main(App):
 		return self.controlScreen
 	
 	# Set connection to control application to true and update label
-	def cbConnectionStateChanged(self):
-		self.controlScreen.macro_connected = True
+	def cbConnectionStateChanged(self, value):
+		self.controlScreen.macro_connected = value
 		self.controlScreen.update_connected_label()
 
 
