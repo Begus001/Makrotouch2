@@ -1,37 +1,46 @@
 [
   {
+	"type":"local",
 	"name": "Button 1",
 	"image": "0.jpg"
   },
   {
+	"type": "remote",
 	"name": "",
 	"image": "1.jpg"
   },
   {
+	"type": "remote",
 	"name": "Button 3",
 	"image": ""
   },
   {
+	"type": "remote",
 	"name": "Button 4",
 	"image": "2.jpg"
   },
   {
+	"type": "remote",
 	"name": "Button 5",
 	"image": ""
   },
   {
+	"type": "remote",
 	"name": "Button 6",
 	"image": ""
   },
   {
+	"type": "remote",
 	"name": "Button 7",
 	"image": ""
   },
   {
+	"type": "remote",
 	"name": "Button 8",
 	"image": ""
   },
   {
+	"type": "remote",
 	"name": "Button 9",
 	"image": ""
   }

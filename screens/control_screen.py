@@ -112,7 +112,7 @@ class ControlScreen(BoxLayout):
 		
 		print('Switched to page ' + str(self.macro_page))
 	
-	# Clears macro icons and creates new icons form json file
+	# Clears macro icons and creates new icons from json file
 	def init_macros(self):
 		print('Initializing macros')
 		
@@ -130,7 +130,7 @@ class ControlScreen(BoxLayout):
 
 				# Checks if the current macro has an image, a name, or both
 				if current_name != '' and current_image != '':
-					current_btn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
+					current_btn.bind(on_press=partial(self.exec_remote, i), on_release=self.reset_border)
 					current_btn.text = current_name
 					
 					if os.path.exists('img/' + current_image):
@@ -139,9 +139,9 @@ class ControlScreen(BoxLayout):
 				
 				elif current_image == '':
 					current_btn.text = current_name
-					current_btn.bind(on_press=partial(self.exec_macro, i))
+					current_btn.bind(on_press=partial(self.exec_remote, i))
 				elif current_name == '':
-					current_btn.bind(on_press=partial(self.exec_macro, i), on_release=self.reset_border)
+					current_btn.bind(on_press=partial(self.exec_remote, i), on_release=self.reset_border)
 					if os.path.exists('img/' + current_image):
 						current_btn.background_normal = 'img/' + current_image
 						current_btn.border = (0, 0, 0, 0)
@@ -162,7 +162,7 @@ class ControlScreen(BoxLayout):
 		sender.border = (0, 0, 0, 0)
 	
 	# Executes the action of the pressed macro button
-	def exec_macro(self, macroId, sender):
+	def exec_remote(self, macroId, sender):
 		sender.border = (16, 16, 16, 16)
 		
 		msg = 'makrotouch exec{}'.format(str(macroId))
