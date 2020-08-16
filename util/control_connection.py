@@ -20,6 +20,7 @@ class ControlConnection:
 		self.recv_buf_size: int = Config.config['macroRecvBufSize']
 		self.target_ip: str = ''
 		self.connected: bool = False
+		self.close_signal: bool = False
 		# endregion
 		
 		# region Create and start listener thread
@@ -31,8 +32,12 @@ class ControlConnection:
 	
 	# Listens for broadcast, sends keep alives and reverts to listening if connection is interrupted
 	def handle_connection(self):
-		while True:
+		while not self.close_signal:
 			self.listen()
+			
+			if self.close_signal:
+				return
+			
 			self.keep_alive()
 	
 	# Tries to bind to port set in config.json and listen for makrotouch broadcast
@@ -40,6 +45,9 @@ class ControlConnection:
 		
 		# region Try binding
 		while True:
+			if self.close_signal:
+				return
+			
 			try:
 				self.s.bind(('', self.port))
 				print('Listening on port ' + str(self.port))
@@ -51,7 +59,15 @@ class ControlConnection:
 		
 		# region Listen for broadcast
 		while not self.connected:
-			msg, addr = self.s.recvfrom(self.recv_buf_size)
+			if self.close_signal:
+				return
+			
+			self.s.settimeout(1)
+			try:
+				msg, addr = self.s.recvfrom(self.recv_buf_size)
+			except socket.timeout:
+				continue
+			
 			msg = msg.decode()
 			
 			if msg != 'makrotouch connect':
@@ -86,6 +102,9 @@ class ControlConnection:
 	# Receives messages and sends keep alive
 	def keep_alive(self):
 		while self.connected:
+			if self.close_signal:
+				return
+			
 			self.s.settimeout(Config.config['keepAliveTimeout'])
 			
 			try:
@@ -141,3 +160,8 @@ class ControlConnection:
 		print('Connection status changed to {}'.format(status))
 		self.control_screen.macro_connected = status
 		self.control_screen.update_connected_label()
+	
+	# Closes the connection
+	def close(self):
+		print('Stopping connection handler')
+		self.close_signal = True

@@ -7,6 +7,7 @@ from util.config import Config
 from functools import partial
 import math
 import os
+import requests
 
 
 # Main screen
@@ -116,6 +117,10 @@ class ControlScreen(BoxLayout):
 	def init_macros(self):
 		print('Initializing macros')
 		
+		if len(self.macros) <= 0:
+			print('\r\nInvalid macro.json')
+			exit(-1)
+		
 		self.icon_grid.clear_widgets()
 		i = self.macro_page * self.macro_page_size
 		
@@ -127,10 +132,11 @@ class ControlScreen(BoxLayout):
 				current = self.macros[i]
 				current_name = current['name']
 				current_image = current['image']
-
+				
 				# Checks if the current macro has an image, a name, or both
 				if current_name != '' and current_image != '':
-					current_btn.bind(on_press=partial(self.exec_remote, i), on_release=self.reset_border)
+					
+					current_btn.bind(on_release=self.reset_border)
 					current_btn.text = current_name
 					
 					if os.path.exists('img/' + current_image):
@@ -139,15 +145,23 @@ class ControlScreen(BoxLayout):
 				
 				elif current_image == '':
 					current_btn.text = current_name
-					current_btn.bind(on_press=partial(self.exec_remote, i))
 				elif current_name == '':
-					current_btn.bind(on_press=partial(self.exec_remote, i), on_release=self.reset_border)
+					current_btn.bind(on_release=self.reset_border)
 					if os.path.exists('img/' + current_image):
 						current_btn.background_normal = 'img/' + current_image
 						current_btn.border = (0, 0, 0, 0)
 					else:
 						current_btn.text = 'IMG_ERR'
 				
+				# Checks if current macro can be executed locally, or if it needs a connection to the control application
+				if current['type'] == 'remote':
+					current_btn.bind(on_press=partial(self.exec_remote, i))
+				elif current['type'] == 'local':
+					current_btn.bind(on_press=partial(self.exec_local, i))
+				else:
+					print('\r\nInvalid macro.json')
+					exit(-1)
+			
 			self.icon_grid.add_widget(current_btn)
 			i += 1
 	
@@ -161,11 +175,24 @@ class ControlScreen(BoxLayout):
 	def reset_border(self, sender):
 		sender.border = (0, 0, 0, 0)
 	
-	# Executes the action of the pressed macro button
-	def exec_remote(self, macroId, sender):
+	# Executes the action of the pressed button even if not connected to control application
+	def exec_local(self, macro_id, sender):
 		sender.border = (16, 16, 16, 16)
 		
-		msg = 'makrotouch exec{}'.format(str(macroId))
+		for current in self.macros[macro_id]['action']:
+			if current['type'] == 'post-request':
+				requests.post(current['url'], data=current['data'])
+			elif current['type'] == 'get-request':
+				requests.get(current['url'], data=current['data'])
+			else:
+				print('\r\nInvalid macro.json')
+				exit(-1)
+	
+	# Executes the action of the pressed macro button if connected to control application
+	def exec_remote(self, macro_id, sender):
+		sender.border = (16, 16, 16, 16)
+		
+		msg = 'makrotouch exec{}'.format(str(macro_id))
 		
 		if self.macro_connected:
 			self.macro_connection.send(msg)
