@@ -30,7 +30,7 @@ class ControlScreen(BoxLayout):
 		self.macro_cols: int = Config.config['macroCols']
 		self.macro_rows: int = Config.config['macroRows']
 		self.macro_page_size: int = self.macro_cols * self.macro_rows
-		self.num_macro_pages: int = math.ceil(self.num_macros / self.macro_page_size)
+		self.num_macro_pages: int = math.ceil(self.num_macros / self.macro_page_size) if len(self.macros) > 0 else 1  # Calculate number of pages if macros not empty, else set page to 1
 		self.macro_connected: bool = False
 		self.macro_connection = None
 		# endregion
@@ -117,11 +117,13 @@ class ControlScreen(BoxLayout):
 	def init_macros(self):
 		print('Initializing macros')
 		
-		if len(self.macros) <= 0:
-			print('\r\nInvalid macro.json')
-			exit(-1)
-		
 		self.icon_grid.clear_widgets()
+		
+		# Add label if macro.json is empty
+		if len(self.macros) <= 0:
+			self.icon_grid.add_widget(Label(text='Add macros via the control application'))
+			return
+		
 		i = self.macro_page * self.macro_page_size
 		
 		while i < (self.macro_page * self.macro_page_size) + self.macro_page_size:
@@ -130,6 +132,13 @@ class ControlScreen(BoxLayout):
 			if i < self.num_macros:
 				
 				current = self.macros[i]
+				
+				# Check if item is spacer
+				if current['type'] == 'spacer':
+					self.icon_grid.add_widget(Button())
+					i += 1
+					continue
+				
 				current_name = current['name']
 				current_image = current['image']
 				

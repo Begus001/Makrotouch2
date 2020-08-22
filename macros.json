@@ -24,7 +24,7 @@
 	"image": ""
   },
   {
-	"type": "remote",
+	"type": "spacer",
 	"name": "Button 6",
 	"image": ""
   },
@@ -34,7 +34,7 @@
 	"image": ""
   },
   {
-	"type": "remote",
+	"type": "spacer",
 	"name": "Button 8",
 	"image": ""
   },
