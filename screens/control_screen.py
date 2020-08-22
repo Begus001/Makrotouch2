@@ -179,14 +179,19 @@ class ControlScreen(BoxLayout):
 	def exec_local(self, macro_id, sender):
 		sender.border = (16, 16, 16, 16)
 		
-		for current in self.macros[macro_id]['action']:
-			if current['type'] == 'post-request':
-				requests.post(current['url'], data=current['data'])
-			elif current['type'] == 'get-request':
-				requests.get(current['url'], data=current['data'])
-			else:
-				print('\r\nInvalid macro.json')
-				exit(-1)
+		try:
+			for current in self.macros[macro_id]['action']:
+				if current['type'] == 'post-request':
+					requests.post(current['url'], data=current['data'])
+				elif current['type'] == 'get-request':
+					requests.get(current['url'], data=current['data'])
+				elif current['type'] == 'console-print':
+					print(current['message'])
+				else:
+					return
+		except KeyError:
+			print('Invalid action')
+			return
 	
 	# Executes the action of the pressed macro button if connected to control application
 	def exec_remote(self, macro_id, sender):

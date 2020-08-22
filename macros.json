@@ -1,8 +1,22 @@
 [
   {
-	"type": "remote",
+	"type": "local",
 	"name": "Button 4",
-	"image": ""
+	"image": "",
+	"action": [
+	  {
+		"type": "console-print",
+		"message": "TEST MESSAGE"
+	  },
+	  {
+		"type": "console-print",
+		"message": "ANOTHER ONE"
+	  },
+	  {
+		"type": "console-print",
+		"message": "YEAHHHH BOIIIII"
+	  }
+	]
   },
   {
 	"type": "remote",
