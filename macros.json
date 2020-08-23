@@ -2,7 +2,7 @@
   {
 	"type": "local",
 	"name": "Button 4",
-	"image": "",
+	"image": "0.jpg",
 	"action": [
 	  {
 		"type": "console-print",
@@ -19,19 +19,19 @@
 	]
   },
   {
-	"type": "remote",
+	"type": "spacer",
 	"name": "Button 5",
 	"image": ""
   },
   {
-	"type": "spacer",
+	"type": "remote",
 	"name": "Button 6",
-	"image": ""
+	"image": "1.jpg"
   },
   {
 	"type": "remote",
 	"name": "Button 7",
-	"image": ""
+	"image": "2.jpg"
   },
   {
 	"type": "spacer",

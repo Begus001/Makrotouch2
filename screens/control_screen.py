@@ -36,23 +36,19 @@ class ControlScreen(BoxLayout):
 		self.connection = None
 		# endregion
 		
-		# region Wrapper Layout config
+		# region Layout config
 		self.top_bar = BoxLayout(orientation='horizontal', size_hint=(1, 0.1), spacing=3)
 		self.icon_wrapper = BoxLayout(orientation='horizontal', size_hint=(1, 0.9), spacing=3)
 		self.icon_grid = GridLayout(cols=self.cols, size_hint=(0.8, 1))
-		# endregion
 		
-		# region Create buttons
-		self.bt_exit = Button(text='Exit', size_hint=(0.1, 1), on_press=self.exit)
+		self.bt_exit = Button(background_normal='internal_img/exit.png', background_down='internal_img/exit.png', size_hint=(0.1, 1), on_press=self.exit)
 		self.lb_page = Label(size_hint=(0.4, 1))
 		self.lb_connected = Label(size_hint=(0.4, 1))
-		self.bt_settings = Button(text='Settings', size_hint=(0.1, 1))
+		self.bt_settings = Button(background_normal='internal_img/settings.png', background_down='internal_img/settings.png', size_hint=(0.1, 1))
 		
 		self.bt_prev = Button(text='<', size_hint=(0.1, 1), on_press=self.prev_page)
 		self.bt_next = Button(text='>', size_hint=(0.1, 1), on_press=self.next_page)
-		# endregion
 		
-		# region Combine all widgets
 		self.top_bar.add_widget(self.bt_exit)
 		self.top_bar.add_widget(self.lb_page)
 		self.top_bar.add_widget(self.lb_connected)
@@ -173,8 +169,10 @@ class ControlScreen(BoxLayout):
 					
 					current_btn.bind(on_release=self.reset_border)
 					current_btn.text = current_name
+					current_btn.outline_width = 2
 					
 					if os.path.exists('img/' + current_image):
+						current_btn.background_down = 'img/' + current_image
 						current_btn.background_normal = 'img/' + current_image
 						current_btn.border = (0, 0, 0, 0)
 				
@@ -193,9 +191,6 @@ class ControlScreen(BoxLayout):
 					current_btn.bind(on_press=partial(self.exec_remote, i))
 				elif current['type'] == 'local':
 					current_btn.bind(on_press=partial(self.exec_local, i))
-				else:
-					print('\r\nInvalid macro.json')
-					exit(-1)
 			
 			self.icon_grid.add_widget(current_btn)
 			i += 1
