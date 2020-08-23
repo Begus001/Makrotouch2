@@ -8,5 +8,5 @@
   "macroServerPort": 42069,
   "macroRecvBufSize": 64,
   "ipOverride": "",
-  "keepAliveTimeout": 5
+  "keepAliveTimeout": 3
 }

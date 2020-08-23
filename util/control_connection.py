@@ -158,7 +158,7 @@ class ControlConnection:
 	def change_connection_status(self, status):
 		self.connected = status
 		print('Connection status changed to {}'.format(status))
-		self.control_screen.macro_connected = status
+		self.control_screen.connected = status
 		self.control_screen.update_connected_label()
 	
 	# Closes the connection

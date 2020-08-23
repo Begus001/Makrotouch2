@@ -2,6 +2,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 from util.json_loader import JsonLoader
 from util.config import Config
 from functools import partial
@@ -25,24 +26,24 @@ class ControlScreen(BoxLayout):
 		self.macro_cfg_location: str = 'macros.json'
 		self.macros = JsonLoader.load_file(self.macro_cfg_location)  # Load configuration
 		self.img_location = 'img/'
-		self.macro_page: int = 0
+		self.page: int = 0
 		self.num_macros: int = len(self.macros)
-		self.macro_cols: int = Config.config['macroCols']
-		self.macro_rows: int = Config.config['macroRows']
-		self.macro_page_size: int = self.macro_cols * self.macro_rows
-		self.num_macro_pages: int = math.ceil(self.num_macros / self.macro_page_size) if len(self.macros) > 0 else 1  # Calculate number of pages if macros not empty, else set page to 1
-		self.macro_connected: bool = False
-		self.macro_connection = None
+		self.cols: int = Config.config['macroCols']
+		self.rows: int = Config.config['macroRows']
+		self.page_size: int = self.cols * self.rows
+		self.num_pages: int = math.ceil(self.num_macros / self.page_size) if len(self.macros) > 0 else 1  # Calculate number of pages if macros not empty, else set page to 1
+		self.connected: bool = False
+		self.connection = None
 		# endregion
 		
 		# region Wrapper Layout config
 		self.top_bar = BoxLayout(orientation='horizontal', size_hint=(1, 0.1), spacing=3)
 		self.icon_wrapper = BoxLayout(orientation='horizontal', size_hint=(1, 0.9), spacing=3)
-		self.icon_grid = GridLayout(cols=self.macro_cols, size_hint=(0.8, 1))
+		self.icon_grid = GridLayout(cols=self.cols, size_hint=(0.8, 1))
 		# endregion
 		
 		# region Create buttons
-		self.bt_switch_mode = Button(text='Mode', size_hint=(0.1, 1))
+		self.bt_exit = Button(text='Exit', size_hint=(0.1, 1), on_press=self.exit)
 		self.lb_page = Label(size_hint=(0.4, 1))
 		self.lb_connected = Label(size_hint=(0.4, 1))
 		self.bt_settings = Button(text='Settings', size_hint=(0.1, 1))
@@ -52,7 +53,7 @@ class ControlScreen(BoxLayout):
 		# endregion
 		
 		# region Combine all widgets
-		self.top_bar.add_widget(self.bt_switch_mode)
+		self.top_bar.add_widget(self.bt_exit)
 		self.top_bar.add_widget(self.lb_page)
 		self.top_bar.add_widget(self.lb_connected)
 		self.top_bar.add_widget(self.bt_settings)
@@ -76,42 +77,67 @@ class ControlScreen(BoxLayout):
 	# Updates label that displays page number
 	def update_page_label(self):
 		print('Updating page label')
-		self.lb_page.text = 'Page: ' + str(self.macro_page + 1) + '/' + str(self.num_macro_pages)
+		self.lb_page.text = 'Page: ' + str(self.page + 1) + '/' + str(self.num_pages)
 	
 	# Updates label that indicates the connection status
 	def update_connected_label(self):
 		print('Updating connected label')
-		self.lb_connected.text = 'Connected to control: ' + ('Yes' if self.macro_connected else 'No')
+		self.lb_connected.text = 'Connected to control: ' + ('Yes' if self.connected else 'No')
 	
 	# Tries to switch to next page, else loops
 	def next_page(self, sender):
-		print('\nTrying to switch to next page ' + str(self.macro_page + 1))
+		print('\nTrying to switch to next page ' + str(self.page + 1))
 		
-		if (self.macro_page + 1) >= self.num_macro_pages:
+		if (self.page + 1) >= self.num_pages:
 			print('Wrapping around')
-			self.macro_page = 0
+			self.page = 0
 		else:
-			self.macro_page += 1
+			self.page += 1
 		
 		self.update_page_label()
 		self.init_macros()
 		
-		print('Switched to page ' + str(self.macro_page))
+		print('Switched to page ' + str(self.page))
 	
 	# Tries to switch to previous page, else loops
 	def prev_page(self, sender):
-		print('\nTrying to switch to previous page ' + str(self.macro_page - 1))
+		print('\nTrying to switch to previous page ' + str(self.page - 1))
 		
-		if (self.macro_page - 1) < 0:
+		if (self.page - 1) < 0:
 			print('Wrapping around')
-			self.macro_page = self.num_macro_pages - 1
+			self.page = self.num_pages - 1
 		else:
-			self.macro_page -= 1
+			self.page -= 1
 		
 		self.update_page_label()
 		self.init_macros()
 		
-		print('Switched to page ' + str(self.macro_page))
+		print('Switched to page ' + str(self.page))
+	
+	# Opens popup, which allows rebooting, shutting down and closing the application
+	def exit(self, sender):
+		boxLayout = BoxLayout(orientation='vertical')
+		popup = Popup(title='Exit', size_hint=(None, None), size=(800, 400))
+		popup.add_widget(boxLayout)
+		
+		boxLayout.add_widget(Button(text='Exit Application', on_press=self.exit_app))
+		boxLayout.add_widget(Button(text='Reboot Device', on_press=self.reboot))
+		boxLayout.add_widget(Button(text='Shutdown Device', on_press=self.shutdown))
+		
+		popup.open()
+	
+	# Notifies connection to close and exits
+	def exit_app(self, sender):
+		self.connection.close()
+		exit(0)
+	
+	# Reboots the device
+	def reboot(self, sender):
+		os.system('sudo reboot')
+	
+	# Shuts device down
+	def shutdown(self, sender):
+		os.system('sudo shutdown -hP now')
 	
 	# Clears macro icons and creates new icons from json file
 	def init_macros(self):
@@ -124,9 +150,9 @@ class ControlScreen(BoxLayout):
 			self.icon_grid.add_widget(Label(text='Add macros via the control application'))
 			return
 		
-		i = self.macro_page * self.macro_page_size
+		i = self.page * self.page_size
 		
-		while i < (self.macro_page * self.macro_page_size) + self.macro_page_size:
+		while i < (self.page * self.page_size) + self.page_size:
 			current_btn = Button()
 			
 			if i < self.num_macros:
@@ -208,7 +234,7 @@ class ControlScreen(BoxLayout):
 		
 		msg = 'makrotouch exec{}'.format(str(macro_id))
 		
-		if self.macro_connected:
-			self.macro_connection.send(msg)
+		if self.connected:
+			self.connection.send(msg)
 		else:
 			print('Couldn\'t send "{}" to control application, not connected'.format(msg))

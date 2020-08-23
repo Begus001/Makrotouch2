@@ -15,8 +15,8 @@ class Main(App):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 		self.control_screen = ControlScreen()
-		self.macro_connection = ControlConnection(self.control_screen)
-		self.control_screen.macro_connection = self.macro_connection
+		self.connection = ControlConnection(self.control_screen)
+		self.control_screen.connection = self.connection
 	
 	def build(self):
 		return self.control_screen
@@ -25,4 +25,4 @@ class Main(App):
 if __name__ == '__main__':
 	main = Main()
 	main.run()
-	main.macro_connection.close()
+	main.connection.close()
