@@ -42,8 +42,8 @@ class ControlScreen(BoxLayout):
 		self.icon_grid = GridLayout(cols=self.cols, size_hint=(0.8, 1))
 		
 		self.bt_exit = Button(background_normal='internal_img/exit.png', background_down='internal_img/exit.png', size_hint=(0.1, 1), on_press=self.exit)
-		self.lb_page = Label(size_hint=(0.4, 1))
-		self.lb_connected = Label(size_hint=(0.4, 1))
+		self.lb_page = Label(size_hint=(0.4, 1), font_size='20dp')
+		self.lb_connected = Label(size_hint=(0.4, 1), font_size='20dp')
 		self.bt_settings = Button(background_normal='internal_img/settings.png', background_down='internal_img/settings.png', size_hint=(0.1, 1))
 		
 		self.bt_prev = Button(text='<', size_hint=(0.1, 1), on_press=self.prev_page)
@@ -78,7 +78,7 @@ class ControlScreen(BoxLayout):
 	# Updates label that indicates the connection status
 	def update_connected_label(self):
 		print('Updating connected label')
-		self.lb_connected.text = 'Connected to control: ' + ('Yes' if self.connected else 'No')
+		self.lb_connected.text = 'Connected' if self.connected else 'Not connected'
 	
 	# Tries to switch to next page, else loops
 	def next_page(self, sender):
@@ -149,7 +149,7 @@ class ControlScreen(BoxLayout):
 		i = self.page * self.page_size
 		
 		while i < (self.page * self.page_size) + self.page_size:
-			current_btn = Button()
+			current_btn = Button(font_size='14dp')
 			
 			if i < self.num_macros:
 				
@@ -227,7 +227,7 @@ class ControlScreen(BoxLayout):
 	def exec_remote(self, macro_id, sender):
 		sender.border = (16, 16, 16, 16)
 		
-		msg = 'makrotouch exec{}'.format(str(macro_id))
+		msg = 'makrotouch exec {}'.format(str(macro_id))
 		
 		if self.connected:
 			self.connection.send(msg)

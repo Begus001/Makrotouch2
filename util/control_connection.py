@@ -118,6 +118,7 @@ class ControlConnection:
 			
 			if 'makrotouch ' in msg:
 				if msg.split(' ')[1] == 'ping':
+					# print('Keep alive received')
 					self.s.sendto(b'makrotouch pong', (self.target_ip, self.port))
 				else:
 					self.command(msg.split(' ')[1])
@@ -163,5 +164,8 @@ class ControlConnection:
 	
 	# Closes the connection
 	def close(self):
+		if self.connected:
+			self.send('makrotouch disconnect')
+			
 		print('Stopping connection handler')
 		self.close_signal = True
